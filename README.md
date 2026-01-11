@@ -1,153 +1,72 @@
-# WhatsApp Baileys
+# Baileys-Zakzz — WhatsApp Bot Framework 2025 Edition
 
-<p align="center">
-  <img src="https://files.catbox.moe/369pux.jpg" alt="Thumbnail" />
-</p>
+![Baileys Zakzz Logo](https://img1.pixhost.to/images/9606/654011461_alwayszakzz.jpg)
 
-WhatsApp Baileys is an open-source library designed to help developers build automation solutions and integrations with WhatsApp efficiently and directly. Using websocket technology without the need for a browser, this library supports a wide range of features such as message management, chat handling, group administration, as well as interactive messages and action buttons for a more dynamic user experience.
+[![Stars](https://img.shields.io/github/stars/ZakzzBotz/Bails?style=for-the-badge)](https://github.com/ZakzzBotz/Bails)
+[![Version](https://img.shields.io/npm/v/baileys-zakzz?style=for-the-badge)](https://www.npmjs.com/package/baileys-zakzz)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](#license)
 
-Actively developed and maintained, baileys continuously receives updates to enhance stability and performance. One of the main focuses is to improve the pairing and authentication processes to be more stable and secure. Pairing features can be customized with your own codes, making the process more reliable and less prone to interruptions.
+**Baileys-Zakzz** adalah versi modern dari [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys), dirancang untuk pengembang bot WhatsApp yang membutuhkan kestabilan tinggi, struktur modular, dan kemampuan pengelolaan sesi otomatis.  
+Fokus utama: *stabil, ringan, cepat, dan siap pakai untuk 2025.*
 
-This library is highly suitable for building business bots, chat automation systems, customer service solutions, and various other communication automation applications that require high stability and comprehensive features. With a lightweight and modular design, baileys is easy to integrate into different systems and platforms.
+## Fitur Utama
 
----
+- Pairing code cepat & fleksibel  
+- Auto reconnect & session recovery otomatis  
+- Kompatibel dengan WhatsApp Business  
+- Struktur modular siap pakai untuk bot apa pun  
+- Mendukung multi-device terbaru  
+- Optimasi performa untuk VPS & cloud  
+- Build system JavaScript yang bersih dan efisien  
 
-### Main Features and Advantages
+## Instalasi
 
-- Supports automatic and custom pairing processes
-- Fixes previous pairing issues that often caused failures or disconnections
-- Supports interactive messages, action buttons, and dynamic menus
-- Efficient automatic session management for reliable operation
-- Compatible with the latest multi-device features from WhatsApp
-- Lightweight, stable, and easy to integrate into various systems
-- Suitable for developing bots, automation, and complete communication solutions
-- Comprehensive documentation and example codes to facilitate development
-
----
-
-## Getting Started
-
-Begin by installing the library via your preferred package manager, then follow the provided configuration guide. You can also utilize the ready-made example codes to understand how the features work. Use session storage and interactive messaging features to build complete, stable solutions tailored to your business or project needs.
-
-## How To Usage?
 ```json
-"depencies": {
-  "@whiskeysockets/baileys": "github:kayzennotdev/bail"
+{
+  "dependencies": {
+    "baileys": "github:ZakzzBotz/Bails"
+  }
 }
 ```
-## Import
-```javascript
-const {
-  default:makeWASocket,
-  // Other Options 
-} = require('@whiskeysockets/baileys');
-```
+## Connecting
 
----
-# How To Connect To Whatsapp
-## With QR Code
-```javascript
-const {
-  default: makeWASocket
-} = require('@whiskeysockets/baileys');
+``` ts
+import makeWASocket, { DisconnectReason } from '@ZakzzBotz/bails'
+import { Boom } from '@hapi/boom'
 
-const client = makeWASocket({
-  browser: ['Ubuntu', 'Chrome', '20.00.1'],
-  printQRInTerminal: true
-})
-```
+async function connectToWhatsApp () {
+    const sock = makeWASocket({
+        // can provide additional config here
+        printQRInTerminal: true
+    })
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update
+        if(connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
+            console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
+            // reconnect if not logged out
+            if(shouldReconnect) {
+                connectToWhatsApp()
+            }
+        } else if(connection === 'open') {
+            console.log('opened connection')
+        }
+    })
+    sock.ev.on('messages.upsert', m => {
+        console.log(JSON.stringify(m, undefined, 2))
 
-## Connect With Number
-```javascript
-const {
-  default: makeWASocket,
-  fetchLatestWAWebVersion
-} = require('@whiskeysockets/baileys');
+        console.log('replying to', m.messages[0].key.remoteJid)
+        await sock.sendMessage(m.messages[0].key.remoteJid!, { text: 'Hello there!' })
+    })
+}
+connectToWhatsApp()
+``` 
 
-const client = makeWASocket({
-  browser: ['Ubuntu', 'Chrome', '20.00.1'],
-  printQRInTerminal: false,
-  version: fetchLatestWAWebVersion()
-  // Other options
-});
+## Thanks To All Developer
 
-const number = "628XXXXX";
-const code = await client.requestPairingCode(number.trim) /* Use : (number, "YYYYYYYY") for custom-pairing */
+WhatsApp: [wa.me/6282315314215](https://wa.me/6282315314215)  
+Telegram: [t.me/AlwaysZakzz](https://t.me/AlwaysZakzz)  
+WhiskeySockets: [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys)  
+Node.js: [nodejs.org](https://nodejs.org)  
 
-console.log("Ur pairing code : " + code)
-```
-
-# Sending messages
-
-## send orderMessage
-```javascript
-const fs = require('fs');
-const nameImg = fs.readFileSync('./YourImage');
-
-await client.sendMessage(m.chat, {
-  thumbnail: YourImg,
-  message: "Gotta get a grip",
-  orderTitle: "HaveANiceDay",
-  totalAmount1000: 8888,
-  totalCurrencyCode: "IDR"
-}, { quoted:m })
-```
-
-## send pollResultSnapshotMessage
-```javascript
-await client.sendMessage(m.chat, {
-  pollResultMessage: {
-    name: "n",
-    options: [
-      {
-        optionName: "poll 1"
-      },
-      {
-        optionName: "poll 2"
-      }
-    ],
-    newsletter: {
-      newsletterName: "Kayzennotdev",
-      newsletterJid: "1@newsletter"
-    }
-  }
-})
-```
-
-## send productMessage
-```javascript
-await client.relayMessage(m.chat, {
-  productMessage {
-    title: "",
-    description: "zZZ...",
-    thumbnail: { url: "./YourImage" },
-    productId: "EXAMPLE_TOKEN",
-    retailerId: "EXAMPLE_RETAILER_ID",
-    url: "https://t.me/kayzennotdev",
-    body: "Nak Tido",
-    footer: "Footer",
-    buttons: [
-      {
-        name: "cta_url",
-        buttonParamsJson: "{\"display_text\":\"kayzen\",\"url\":\"https://t.me/kayzennotdev\"}"
-      }
-    ],
-    priceAmount1000: 72502,
-    currencyCode: "IDR"
-  }
-})
-```
-## Thanks For Support
-```javascript
-const thanksFor = async () => {
-  const credit = new Map([
-    ["kayzen", ""],
-    ["Gupong", "source my fork"],
-    ["yuukey", "main source baileys ( maybe )"]
-  ]);
-
-  return Object.fromEntries(credit);
-};
-```
-
-
+© 2026 AlwaysZakzz — All rights reserved.
